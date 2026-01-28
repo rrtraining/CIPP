@@ -916,5 +916,82 @@
       }
     ],
     "mappingRequired": false
+  },
+  {
+    "name": "Action1",
+    "id": "Action1",
+    "type": "RMM",
+    "cat": "Endpoint Management",
+    "logo": "/assets/integrations/action1.png",
+    "logoDark": "/assets/integrations/action1_dark.png",
+    "forceSyncButton": true,
+    "description": "Enable Action1 integration for endpoint management, vulnerability scanning, and patch deployment.",
+    "helpText": "This integration allows you to view Action1 endpoints, vulnerabilities, and missing updates within CIPP. You can also trigger scans and manage patches.",
+    "links": [
+      {
+        "name": "Action1 Documentation",
+        "url": "https://www.action1.com/documentation/"
+      }
+    ],
+    "SettingOptions": [
+      {
+        "type": "switch",
+        "name": "Action1.Enabled",
+        "label": "Enable Integration"
+      },
+      {
+        "type": "textField",
+        "name": "Action1.Instance",
+        "label": "Action1 Instance URL",
+        "placeholder": "https://app.action1.com",
+        "required": true,
+        "condition": {
+          "field": "Action1.Enabled",
+          "compareType": "is",
+          "compareValue": true,
+          "action": "disable"
+        }
+      },
+      {
+        "type": "textField",
+        "name": "Action1.ClientID",
+        "label": "Action1 API Client ID",
+        "placeholder": "Enter your Action1 API Client ID",
+        "required": true,
+        "condition": {
+          "field": "Action1.Enabled",
+          "compareType": "is",
+          "compareValue": true,
+          "action": "disable"
+        }
+      },
+      {
+        "type": "password",
+        "name": "Action1.APIKey",
+        "label": "Action1 API Client Secret",
+        "placeholder": "Enter your Action1 API Client Secret",
+        "required": true,
+        "condition": {
+          "field": "Action1.Enabled",
+          "compareType": "is",
+          "compareValue": true,
+          "action": "disable"
+        }
+      },
+      {
+        "type": "textField",
+        "name": "Action1.OrgID",
+        "label": "Action1 Organization ID",
+        "placeholder": "Enter your Action1 Organization ID",
+        "required": true,
+        "condition": {
+          "field": "Action1.Enabled",
+          "compareType": "is",
+          "compareValue": true,
+          "action": "disable"
+        }
+      }
+    ],
+    "mappingRequired": true
   }
 ]
