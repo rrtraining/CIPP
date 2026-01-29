@@ -1,7 +1,7 @@
 import { Layout as DashboardLayout } from "../../../../layouts/index.js";
 import { CippTablePage } from "../../../../components/CippComponents/CippTablePage.jsx";
 import { useSettings } from "../../../../hooks/use-settings";
-import { Security, BugReport, Visibility } from "@mui/icons-material";
+import { Security, OpenInNew } from "@mui/icons-material";
 
 const Page = () => {
   const pageTitle = "Action1 Vulnerabilities";
@@ -12,7 +12,7 @@ const Page = () => {
       label: "View CVE Details",
       link: `https://nvd.nist.gov/vuln/detail/[cve_id]`,
       color: "info",
-      icon: <Visibility />,
+      icon: <OpenInNew />,
       target: "_blank",
       multiPost: false,
       external: true,
@@ -20,19 +20,19 @@ const Page = () => {
   ];
 
   const offCanvas = {
-    extendedInfoFields: ["cve_id", "title", "severity", "cvss_score", "description"],
+    extendedInfoFields: ["cve_id", "cvss_score", "affected_product", "affected_endpoints", "published_date", "remediation_status"],
     actions: actions,
   };
 
   const simpleColumns = [
     "cve_id",
-    "title",
     "severity",
     "cvss_score",
     "affected_product",
     "affected_endpoints",
+    "remediation_status",
+    "cisa_kev",
     "published_date",
-    "kb_article",
   ];
 
   return (
@@ -48,8 +48,8 @@ const Page = () => {
       simpleColumns={simpleColumns}
       cardButton={
         <>
-          <BugReport sx={{ mr: 1 }} />
-          Known Vulnerabilities (CVEs)
+          <Security sx={{ mr: 1 }} />
+          CVE Vulnerabilities
         </>
       }
     />

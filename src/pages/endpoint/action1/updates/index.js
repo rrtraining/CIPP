@@ -1,7 +1,7 @@
 import { Layout as DashboardLayout } from "../../../../layouts/index.js";
 import { CippTablePage } from "../../../../components/CippComponents/CippTablePage.jsx";
 import { useSettings } from "../../../../hooks/use-settings";
-import { Update, SystemUpdateAlt, Visibility } from "@mui/icons-material";
+import { Update, OpenInNew } from "@mui/icons-material";
 
 const Page = () => {
   const pageTitle = "Action1 Missing Updates";
@@ -12,28 +12,28 @@ const Page = () => {
       label: "View KB Article",
       link: `https://support.microsoft.com/help/[kb_article]`,
       color: "info",
-      icon: <Visibility />,
+      icon: <OpenInNew />,
       target: "_blank",
       multiPost: false,
       external: true,
-      condition: (row) => row.kb_article,
+      condition: (row) => row.kb_article && row.kb_article !== "None" && row.kb_article !== "",
     },
   ];
 
   const offCanvas = {
-    extendedInfoFields: ["title", "severity", "product", "classification", "description"],
+    extendedInfoFields: ["title", "severity", "product", "update_type", "update_source", "release_date", "reboot_needed"],
     actions: actions,
   };
 
   const simpleColumns = [
     "title",
     "severity",
-    "kb_article",
     "product",
-    "classification",
+    "update_type",
+    "update_source",
+    "kb_article",
     "release_date",
-    "affected_endpoints",
-    "endpoint_name",
+    "reboot_needed",
   ];
 
   return (
@@ -49,7 +49,7 @@ const Page = () => {
       simpleColumns={simpleColumns}
       cardButton={
         <>
-          <SystemUpdateAlt sx={{ mr: 1 }} />
+          <Update sx={{ mr: 1 }} />
           Missing Patches & Updates
         </>
       }

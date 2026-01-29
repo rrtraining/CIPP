@@ -1,7 +1,7 @@
 import { Layout as DashboardLayout } from "../../../../layouts/index.js";
 import { CippTablePage } from "../../../../components/CippComponents/CippTablePage.jsx";
 import { useSettings } from "../../../../hooks/use-settings";
-import { Computer, Security, Update, Visibility } from "@mui/icons-material";
+import { Computer, Visibility } from "@mui/icons-material";
 
 const Page = () => {
   const pageTitle = "Action1 Endpoints";
@@ -20,21 +20,18 @@ const Page = () => {
   ];
 
   const offCanvas = {
-    extendedInfoFields: ["name", "hostname", "os_name", "ip_address"],
+    extendedInfoFields: ["name", "hostname", "os_name", "ip_address", "user", "agent_version"],
     actions: actions,
   };
 
-  // Custom cell rendering for status with color coding
   const simpleColumns = [
     "name",
-    "hostname",
     "status",
     "platform",
     "os_name",
-    "os_version",
     "ip_address",
+    "user",
     "last_seen",
-    "agent_version",
     "missing_updates",
   ];
 
