@@ -374,6 +374,8 @@ export const nativeMenuItems = [
       "Endpoint.MEM.*",
       "Endpoint.Device.*",
       "Endpoint.Device.Read",
+      "Endpoint.Action1.*",
+      "CIPP.Extension.*",
     ],
     items: [
       {
@@ -461,6 +463,27 @@ export const nativeMenuItems = [
             title: "Scripts",
             path: "/endpoint/MEM/list-scripts",
             permissions: ["Endpoint.MEM.*"],
+          },
+        ],
+      },
+      {
+        title: "Action1 RMM",
+        permissions: ["Endpoint.Action1.*", "CIPP.Extension.*"],
+        items: [
+          {
+            title: "Endpoints",
+            path: "/endpoint/action1/endpoints",
+            permissions: ["Endpoint.Action1.*", "CIPP.Extension.*"],
+          },
+          {
+            title: "Vulnerabilities",
+            path: "/endpoint/action1/vulnerabilities",
+            permissions: ["Endpoint.Action1.*", "CIPP.Extension.*"],
+          },
+          {
+            title: "Missing Updates",
+            path: "/endpoint/action1/updates",
+            permissions: ["Endpoint.Action1.*", "CIPP.Extension.*"],
           },
         ],
       },
