@@ -1,4 +1,4 @@
-import { BuildingOfficeIcon, HomeIcon, UsersIcon, WrenchIcon } from "@heroicons/react/24/outline";
+import { BuildingOfficeIcon, HomeIcon, UsersIcon, WrenchIcon, ServerIcon } from "@heroicons/react/24/outline";
 import {
   CloudOutlined,
   HomeRepairService,
@@ -961,6 +961,91 @@ export const nativeMenuItems = [
             path: "/cipp/advanced/diagnostics",
             roles: ["superadmin"],
             permissions: ["CIPP.SuperAdmin.*"],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    title: "Infrastructure",
+    type: "header",
+    icon: (
+      <SvgIcon>
+        <ServerIcon />
+      </SvgIcon>
+    ),
+    permissions: ["CIPP.Core.*"],
+    items: [
+      {
+        title: "Overview",
+        path: "/infrastructure",
+        permissions: ["CIPP.Core.*"],
+      },
+      {
+        title: "Proxmox",
+        permissions: ["CIPP.Core.*"],
+        items: [
+          {
+            title: "Nodes",
+            path: "/infrastructure/proxmox/nodes",
+            permissions: ["CIPP.Core.*"],
+          },
+          {
+            title: "Virtual Machines",
+            path: "/infrastructure/proxmox/vms",
+            permissions: ["CIPP.Core.*"],
+          },
+          {
+            title: "Containers",
+            path: "/infrastructure/proxmox/containers",
+            permissions: ["CIPP.Core.*"],
+          },
+        ],
+      },
+      {
+        title: "FortiGate",
+        permissions: ["CIPP.Core.*"],
+        items: [
+          {
+            title: "System Status",
+            path: "/infrastructure/fortigate/status",
+            permissions: ["CIPP.Core.*"],
+          },
+          {
+            title: "Interfaces",
+            path: "/infrastructure/fortigate/interfaces",
+            permissions: ["CIPP.Core.*"],
+          },
+          {
+            title: "Firewall Policies",
+            path: "/infrastructure/fortigate/policies",
+            permissions: ["CIPP.Core.*"],
+          },
+          {
+            title: "DHCP Leases",
+            path: "/infrastructure/fortigate/dhcp",
+            permissions: ["CIPP.Core.*"],
+          },
+        ],
+      },
+      {
+        title: "Action1 (MCP)",
+        permissions: ["CIPP.Core.*"],
+        items: [
+          {
+            title: "Endpoints",
+            path: "/infrastructure/action1/endpoints",
+            permissions: ["CIPP.Core.*"],
+          },
+          {
+            title: "Vulnerabilities",
+            path: "/infrastructure/action1/vulnerabilities",
+            permissions: ["CIPP.Core.*"],
+          },
+          {
+            title: "Missing Updates",
+            path: "/infrastructure/action1/updates",
+            permissions: ["CIPP.Core.*"],
           },
         ],
       },
