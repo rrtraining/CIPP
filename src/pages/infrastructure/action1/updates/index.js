@@ -24,16 +24,16 @@ const Page = () => {
   ];
 
   const offCanvas = {
-    extendedInfoFields: ["title", "severity", "kb_id", "release_date", "affected_endpoints", "approval_status"],
+    extendedInfoFields: ["title", "vendor", "severity", "approval_status", "update_type", "reboot_needed", "kb_id", "release_date"],
     actions: actions,
   };
 
-  const simpleColumns = ["title", "severity", "kb_id", "release_date", "affected_endpoints", "approval_status"];
+  const simpleColumns = ["title", "vendor", "severity", "approval_status", "update_type"];
 
-  // Transform function to format the data - handles multiple response formats
+  // Transform function to format the data - handles Action1 MCP response format
   const dataTransform = (data) => {
-    // Try different paths for update data
-    let updates = data?.data?.items || data?.data || data?.items || [];
+    // Action1 MCP returns: { data: { updates: [...], count: N } }
+    let updates = data?.data?.updates || data?.data?.items || data?.updates || data?.items || data?.data || [];
     
     // If it's not an array, try to extract from object
     if (!Array.isArray(updates)) {
@@ -44,16 +44,24 @@ const Page = () => {
       }
     }
     
-    return updates.map((update, index) => ({
-      ...update,
-      id: update.update_id || update.kb_id || update.id || `update-${index}`,
-      title: String(update.title || update.name || "N/A"),
-      severity: String(update.severity || "N/A"),
-      kb_id: String(update.kb_id || update.kb_article || update.kbId || "N/A"),
-      release_date: String(update.release_date || update.releaseDate || update.published_date || "N/A"),
-      affected_endpoints: String(update.affected_endpoints ?? update.affectedEndpoints ?? update.endpoint_count ?? "0"),
-      approval_status: String(update.approval_status || update.approvalStatus || update.status || "Pending"),
-    }));
+    return updates.map((update, index) => {
+      // Get the first version for nested fields (severity, release_date, approval_status)
+      const version = update.versions?.[0] || {};
+      
+      return {
+        ...update,
+        id: update.id || update.update_id || `update-${index}`,
+        title: String(update.name || update.title || "N/A"),
+        severity: String(version.security_severity || update.severity || "Unspecified"),
+        kb_id: String(update.kb_number || update.kb_id || "-"),
+        release_date: String(version.release_date || update.release_date || "-"),
+        affected_endpoints: String(update.affected_endpoints ?? update.endpoint_count ?? "-"),
+        approval_status: String(version.approval_status || update.approval_status || update.status || "Unknown"),
+        vendor: String(update.vendor || "-"),
+        update_type: String(update.update_type || "-"),
+        reboot_needed: String(update.reboot_needed || "-"),
+      };
+    });
   };
 
   return (
