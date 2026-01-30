@@ -32,8 +32,9 @@ const Page = () => {
 
   // Transform function to format the data - handles Action1 MCP response format
   const dataTransform = (data) => {
-    // Action1 MCP returns: { data: { updates: [...], count: N } }
-    let updates = data?.data?.updates || data?.data?.items || data?.updates || data?.items || data?.data || [];
+    // After apiDataKey extraction, data is: { id, type, items[], total_items, ... }
+    // Check multiple paths for compatibility
+    let updates = data?.items || data?.updates || data?.data?.items || data?.data?.updates || [];
     
     // If it's not an array, try to extract from object
     if (!Array.isArray(updates)) {
