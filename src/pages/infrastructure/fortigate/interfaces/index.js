@@ -21,20 +21,29 @@ const Page = () => {
 
   const simpleColumns = ["name", "ip", "status", "type", "vdom", "mtu"];
 
-  // Transform function to format the data
+  // Transform function to format the data - handles multiple response formats
   const dataTransform = (data) => {
-    if (!data?.data?.results) return [];
-    const interfaces = data.data.results;
+    // Try different paths for the interface data
+    let interfaces = data?.data?.results || data?.data || data?.results || data || [];
+    
     // Handle both array and object formats
-    const interfaceList = Array.isArray(interfaces) ? interfaces : Object.values(interfaces);
-    return interfaceList.map((iface, index) => ({
+    if (!Array.isArray(interfaces)) {
+      if (typeof interfaces === "object" && interfaces !== null) {
+        interfaces = Object.values(interfaces);
+      } else {
+        return [];
+      }
+    }
+    
+    return interfaces.map((iface, index) => ({
       ...iface,
-      id: iface.name || index,
-      ip: iface.ip || "N/A",
-      status: iface.status || "unknown",
-      type: iface.type || "N/A",
-      vdom: iface.vdom || "root",
-      mtu: iface.mtu || "N/A",
+      id: iface.name || `iface-${index}`,
+      name: String(iface.name || "N/A"),
+      ip: String(iface.ip || iface.ipaddr || "N/A"),
+      status: String(iface.status || "unknown"),
+      type: String(iface.type || "N/A"),
+      vdom: String(iface.vdom || "root"),
+      mtu: String(iface.mtu || "N/A"),
     }));
   };
 
@@ -47,7 +56,7 @@ const Page = () => {
         action: "interfaces",
         params: "{}",
       }}
-      apiDataKey="data.results"
+      apiDataKey="data"
       queryKey="FortiGateInterfaces"
       actions={actions}
       offCanvas={offCanvas}

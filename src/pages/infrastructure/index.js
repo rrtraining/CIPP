@@ -1,7 +1,6 @@
 import { Layout as DashboardLayout } from "../../layouts/index.js";
 import { Box, Container, Grid, Card, CardContent, CardHeader, Typography, Chip, Stack, CircularProgress, Alert } from "@mui/material";
-import { Storage, Router, Security, Computer, CheckCircle, Error, Warning } from "@mui/icons-material";
-import { useEffect, useState } from "react";
+import { Storage, Router, Computer, CheckCircle, Error as ErrorIcon, Warning } from "@mui/icons-material";
 import { ApiGetCall } from "../../api/ApiCall.jsx";
 import { useQuery } from "@tanstack/react-query";
 
@@ -16,9 +15,12 @@ const SystemStatusCard = ({ title, icon, status, details, loading, error }) => {
   const getStatusIcon = (status) => {
     if (status === "online" || status === "success") return <CheckCircle color="success" />;
     if (status === "warning") return <Warning color="warning" />;
-    if (status === "error" || status === "offline") return <Error color="error" />;
-    return <CircularProgress size={20} />;
+    if (status === "error" || status === "offline") return <ErrorIcon color="error" />;
+    return null;
   };
+
+  // Ensure error is a string
+  const errorMessage = error ? (typeof error === "string" ? error : JSON.stringify(error)) : null;
 
   return (
     <Card sx={{ height: "100%" }}>
@@ -30,7 +32,7 @@ const SystemStatusCard = ({ title, icon, status, details, loading, error }) => {
             <CircularProgress size={24} />
           ) : (
             <Chip
-              label={status || "Unknown"}
+              label={String(status || "unknown")}
               color={getStatusColor(status)}
               size="small"
               icon={getStatusIcon(status)}
@@ -39,25 +41,27 @@ const SystemStatusCard = ({ title, icon, status, details, loading, error }) => {
         }
       />
       <CardContent>
-        {error ? (
+        {errorMessage ? (
           <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
+            {errorMessage}
           </Alert>
         ) : loading ? (
           <Typography color="text.secondary">Loading...</Typography>
-        ) : (
+        ) : details && details.length > 0 ? (
           <Stack spacing={1}>
             {details.map((detail, index) => (
               <Box key={index} sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Typography variant="body2" color="text.secondary">
-                  {detail.label}
+                  {String(detail.label || "")}
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
-                  {detail.value}
+                  {String(detail.value ?? "N/A")}
                 </Typography>
               </Box>
             ))}
           </Stack>
+        ) : (
+          <Typography color="text.secondary">No data available</Typography>
         )}
       </CardContent>
     </Card>
@@ -101,42 +105,81 @@ const Page = () => {
   // Process Proxmox data
   const proxmoxDetails = [];
   let proxmoxStatus = "unknown";
-  if (proxmoxQuery.data?.data?.data) {
-    const nodes = proxmoxQuery.data.data.data;
-    const onlineNodes = nodes.filter((n) => n.status === "online").length;
-    proxmoxStatus = onlineNodes === nodes.length ? "online" : "warning";
-    proxmoxDetails.push({ label: "Total Nodes", value: nodes.length });
-    proxmoxDetails.push({ label: "Online", value: onlineNodes });
-    const totalCPU = nodes.reduce((sum, n) => sum + (n.maxcpu || 0), 0);
-    const totalMem = nodes.reduce((sum, n) => sum + (n.maxmem || 0), 0);
-    proxmoxDetails.push({ label: "Total CPU Cores", value: totalCPU });
-    proxmoxDetails.push({ label: "Total Memory", value: `${Math.round(totalMem / 1024 / 1024 / 1024)} GB` });
+  let proxmoxError = null;
+  
+  try {
+    const proxmoxData = proxmoxQuery.data?.data?.data || proxmoxQuery.data?.data || [];
+    if (Array.isArray(proxmoxData) && proxmoxData.length > 0) {
+      const nodes = proxmoxData;
+      const onlineNodes = nodes.filter((n) => n.status === "online").length;
+      proxmoxStatus = onlineNodes === nodes.length ? "online" : "warning";
+      proxmoxDetails.push({ label: "Total Nodes", value: nodes.length });
+      proxmoxDetails.push({ label: "Online", value: onlineNodes });
+      const totalCPU = nodes.reduce((sum, n) => sum + (n.maxcpu || 0), 0);
+      const totalMem = nodes.reduce((sum, n) => sum + (n.maxmem || 0), 0);
+      proxmoxDetails.push({ label: "Total CPU Cores", value: totalCPU });
+      proxmoxDetails.push({ label: "Total Memory", value: `${Math.round(totalMem / 1024 / 1024 / 1024)} GB` });
+    }
+  } catch (e) {
+    proxmoxError = e.message;
+  }
+  
+  if (proxmoxQuery.error) {
+    proxmoxError = proxmoxQuery.error?.message || String(proxmoxQuery.error);
   }
 
   // Process FortiGate data
   const fortigateDetails = [];
   let fortigateStatus = "unknown";
-  if (fortigateQuery.data?.data?.results) {
-    const fg = fortigateQuery.data.data;
-    fortigateStatus = fg.status === "success" ? "online" : "error";
-    fortigateDetails.push({ label: "Hostname", value: fg.results.hostname || "N/A" });
-    fortigateDetails.push({ label: "Model", value: `${fg.results.model_name} ${fg.results.model_number}` });
-    fortigateDetails.push({ label: "Version", value: fg.version || "N/A" });
-    fortigateDetails.push({ label: "Serial", value: fg.serial || "N/A" });
+  let fortigateError = null;
+  
+  try {
+    const fgData = fortigateQuery.data?.data;
+    if (fgData) {
+      const results = fgData.results || fgData;
+      fortigateStatus = fgData.status === "success" || results.hostname ? "online" : "error";
+      fortigateDetails.push({ label: "Hostname", value: results.hostname || "N/A" });
+      const modelName = results.model_name || results.model || "";
+      const modelNum = results.model_number || "";
+      fortigateDetails.push({ label: "Model", value: `${modelName} ${modelNum}`.trim() || "N/A" });
+      fortigateDetails.push({ label: "Version", value: fgData.version || results.version || "N/A" });
+      fortigateDetails.push({ label: "Serial", value: fgData.serial || results.serial || "N/A" });
+    }
+  } catch (e) {
+    fortigateError = e.message;
+  }
+  
+  if (fortigateQuery.error) {
+    fortigateError = fortigateQuery.error?.message || String(fortigateQuery.error);
   }
 
   // Process Action1 data
   const action1Details = [];
   let action1Status = "unknown";
-  if (action1Query.data?.data?.items) {
-    const endpoints = action1Query.data.data.items;
-    const connected = endpoints.filter((e) => e.status === "Connected").length;
-    action1Status = connected > 0 ? "online" : "warning";
-    action1Details.push({ label: "Total Endpoints", value: action1Query.data.data.total_items || endpoints.length });
-    action1Details.push({ label: "Connected", value: connected });
-    action1Details.push({ label: "Disconnected", value: endpoints.length - connected });
-    const withUpdates = endpoints.filter((e) => e.missing_updates?.critical > 0 || e.missing_updates?.other > 0).length;
-    action1Details.push({ label: "Needs Updates", value: withUpdates });
+  let action1Error = null;
+  
+  try {
+    const a1Data = action1Query.data?.data;
+    const endpoints = a1Data?.items || (Array.isArray(a1Data) ? a1Data : []);
+    if (endpoints.length > 0) {
+      const connected = endpoints.filter((e) => e.status === "Connected" || e.status === "Online").length;
+      action1Status = connected > 0 ? "online" : "warning";
+      action1Details.push({ label: "Total Endpoints", value: a1Data?.total_items || endpoints.length });
+      action1Details.push({ label: "Connected", value: connected });
+      action1Details.push({ label: "Disconnected", value: endpoints.length - connected });
+      const withUpdates = endpoints.filter((e) => {
+        const updates = e.missing_updates;
+        if (!updates) return false;
+        return (updates.critical || 0) > 0 || (updates.other || 0) > 0;
+      }).length;
+      action1Details.push({ label: "Needs Updates", value: withUpdates });
+    }
+  } catch (e) {
+    action1Error = e.message;
+  }
+  
+  if (action1Query.error) {
+    action1Error = action1Query.error?.message || String(action1Query.error);
   }
 
   return (
@@ -154,7 +197,7 @@ const Page = () => {
               status={proxmoxStatus}
               details={proxmoxDetails}
               loading={proxmoxQuery.isLoading}
-              error={proxmoxQuery.error?.message}
+              error={proxmoxError}
             />
           </Grid>
 
@@ -165,7 +208,7 @@ const Page = () => {
               status={fortigateStatus}
               details={fortigateDetails}
               loading={fortigateQuery.isLoading}
-              error={fortigateQuery.error?.message}
+              error={fortigateError}
             />
           </Grid>
 
@@ -176,7 +219,7 @@ const Page = () => {
               status={action1Status}
               details={action1Details}
               loading={action1Query.isLoading}
-              error={action1Query.error?.message}
+              error={action1Error}
             />
           </Grid>
         </Grid>

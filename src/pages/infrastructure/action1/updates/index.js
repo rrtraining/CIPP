@@ -30,12 +30,29 @@ const Page = () => {
 
   const simpleColumns = ["title", "severity", "kb_id", "release_date", "affected_endpoints", "approval_status"];
 
-  // Transform function to format the data
+  // Transform function to format the data - handles multiple response formats
   const dataTransform = (data) => {
-    if (!data?.data?.items) return [];
-    return data.data.items.map((update, index) => ({
+    // Try different paths for update data
+    let updates = data?.data?.items || data?.data || data?.items || [];
+    
+    // If it's not an array, try to extract from object
+    if (!Array.isArray(updates)) {
+      if (typeof updates === "object" && updates !== null) {
+        updates = Object.values(updates);
+      } else {
+        return [];
+      }
+    }
+    
+    return updates.map((update, index) => ({
       ...update,
-      id: update.update_id || update.kb_id || `update-${index}`,
+      id: update.update_id || update.kb_id || update.id || `update-${index}`,
+      title: String(update.title || update.name || "N/A"),
+      severity: String(update.severity || "N/A"),
+      kb_id: String(update.kb_id || update.kb_article || update.kbId || "N/A"),
+      release_date: String(update.release_date || update.releaseDate || update.published_date || "N/A"),
+      affected_endpoints: String(update.affected_endpoints ?? update.affectedEndpoints ?? update.endpoint_count ?? "0"),
+      approval_status: String(update.approval_status || update.approvalStatus || update.status || "Pending"),
     }));
   };
 
@@ -48,7 +65,7 @@ const Page = () => {
         action: "list_available_updates",
         params: "{}",
       }}
-      apiDataKey="data.items"
+      apiDataKey="data"
       queryKey="Action1UpdatesMCP"
       actions={actions}
       offCanvas={offCanvas}
