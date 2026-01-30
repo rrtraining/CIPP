@@ -30,22 +30,15 @@ const Page = () => {
 
   const simpleColumns = ["title", "vendor", "severity", "approval_status", "update_type"];
 
-  // Transform function to format the data - handles Action1 MCP response format
-  const dataTransform = (data) => {
-    // After apiDataKey extraction, data is: { id, type, items[], total_items, ... }
-    // Check multiple paths for compatibility
-    let updates = data?.items || data?.updates || data?.data?.items || data?.data?.updates || [];
-    
-    // If it's not an array, try to extract from object
-    if (!Array.isArray(updates)) {
-      if (typeof updates === "object" && updates !== null) {
-        updates = Object.values(updates);
-      } else {
-        return [];
-      }
+  // Transform function to format each update item
+  // After apiDataKey="data.items" extraction, dataTransform receives the array of updates
+  const dataTransform = (items) => {
+    // Ensure we have an array
+    if (!Array.isArray(items)) {
+      return [];
     }
     
-    return updates.map((update, index) => {
+    return items.map((update, index) => {
       // Get the first version for nested fields (severity, release_date, approval_status)
       const version = update.versions?.[0] || {};
       
@@ -74,7 +67,7 @@ const Page = () => {
         action: "list_available_updates",
         params: "{}",
       }}
-      apiDataKey="data"
+      apiDataKey="data.items"
       queryKey="Action1UpdatesMCP"
       actions={actions}
       offCanvas={offCanvas}
