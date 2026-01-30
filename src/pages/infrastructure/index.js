@@ -2,7 +2,6 @@ import { Layout as DashboardLayout } from "../../layouts/index.js";
 import { Box, Container, Grid, Card, CardContent, CardHeader, Typography, Chip, Stack, CircularProgress, Alert } from "@mui/material";
 import { Storage, Router, Computer, CheckCircle, Error as ErrorIcon, Warning } from "@mui/icons-material";
 import { ApiGetCall } from "../../api/ApiCall.jsx";
-import { useQuery } from "@tanstack/react-query";
 
 const SystemStatusCard = ({ title, icon, status, details, loading, error }) => {
   const getStatusColor = (status) => {
@@ -69,37 +68,29 @@ const SystemStatusCard = ({ title, icon, status, details, loading, error }) => {
 };
 
 const Page = () => {
-  // Proxmox query
-  const proxmoxQuery = useQuery({
-    queryKey: ["infrastructure-proxmox-nodes"],
-    queryFn: () =>
-      ApiGetCall({
-        url: "/api/ExecInfrastructureQuery",
-        data: { system: "proxmox", action: "list_nodes", params: "{}" },
-      }),
+  // Use ApiGetCall directly as hooks - don't wrap in useQuery
+  const proxmoxQuery = ApiGetCall({
+    url: "/api/ExecInfrastructureQuery",
+    data: { system: "proxmox", action: "list_nodes", params: "{}" },
+    queryKey: "infrastructure-proxmox-nodes",
     staleTime: 30000,
+    waiting: true,
   });
 
-  // FortiGate query
-  const fortigateQuery = useQuery({
-    queryKey: ["infrastructure-fortigate-status"],
-    queryFn: () =>
-      ApiGetCall({
-        url: "/api/ExecInfrastructureQuery",
-        data: { system: "fortigate", action: "system_status", params: "{}" },
-      }),
+  const fortigateQuery = ApiGetCall({
+    url: "/api/ExecInfrastructureQuery",
+    data: { system: "fortigate", action: "system_status", params: "{}" },
+    queryKey: "infrastructure-fortigate-status",
     staleTime: 30000,
+    waiting: true,
   });
 
-  // Action1 query
-  const action1Query = useQuery({
-    queryKey: ["infrastructure-action1-endpoints"],
-    queryFn: () =>
-      ApiGetCall({
-        url: "/api/ExecInfrastructureQuery",
-        data: { system: "action1", action: "list_endpoints", params: "{}" },
-      }),
+  const action1Query = ApiGetCall({
+    url: "/api/ExecInfrastructureQuery",
+    data: { system: "action1", action: "list_endpoints", params: "{}" },
+    queryKey: "infrastructure-action1-endpoints",
     staleTime: 30000,
+    waiting: true,
   });
 
   // Process Proxmox data
@@ -124,7 +115,7 @@ const Page = () => {
     proxmoxError = e.message;
   }
   
-  if (proxmoxQuery.error) {
+  if (proxmoxQuery.isError) {
     proxmoxError = proxmoxQuery.error?.message || String(proxmoxQuery.error);
   }
 
@@ -149,7 +140,7 @@ const Page = () => {
     fortigateError = e.message;
   }
   
-  if (fortigateQuery.error) {
+  if (fortigateQuery.isError) {
     fortigateError = fortigateQuery.error?.message || String(fortigateQuery.error);
   }
 
@@ -178,7 +169,7 @@ const Page = () => {
     action1Error = e.message;
   }
   
-  if (action1Query.error) {
+  if (action1Query.isError) {
     action1Error = action1Query.error?.message || String(action1Query.error);
   }
 
